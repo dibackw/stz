@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Система тестирования знаний</title>
+    <style>
+        /* ===== СБРОС И БАЗОВЫЕ СТИЛИ ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #4361ee;
+            --primary-hover: #3a56d4;
+            --secondary: #7209b7;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --dark: #2c3e50;
+            --light: #f8f9fa;
+            --gray: #6c757d;
+            --border: #dee2e6;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --radius: 12px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        /* ===== КОНТЕЙНЕР ===== */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* ===== ШАПКА ===== */
+        header {
+            background: white;
+            border-radius: var(--radius);
+            padding: 20px 30px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .logo-icon {
+            font-size: 2rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-input {
+            padding: 10px 15px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            min-width: 200px;
+            transition: border-color 0.3s;
+        }
+
+        .user-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        /* ===== НАВИГАЦИЯ ===== */
+        nav {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            padding: 10px 20px;
+            background: var(--light);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+            color: var(--dark);
+        }
+
+        .nav-btn:hover,
+        .nav-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* ===== ОСНОВНОЙ КОНТЕНТ ===== */
+        main {
+            background: white;
+            border-radius: var(--radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+            min-height: 500px;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            color: var(--dark);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid var(--primary);
+        }
+
+        /* ===== КАРТОЧКИ ТЕСТОВ ===== */
+        .tests-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .test-card {
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .test-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-5px);
+            box-shadow: var(--shadow);
+        }
+
+        .test-card h3 {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .test-meta {
+            display: flex;
+            gap: 15px;
+            margin: 10px 0;
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+
+        .test-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .test-subject {
+            background: var(--light);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--secondary);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn:disabled {
+            background: var(--gray);
+            cursor: not-allowed;
+        }
+
+        .btn-success {
+            background: var(--success);
+        }
+
+        .btn-success:hover {
+            background: #27ae60;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* ===== ФИЛЬТРЫ ===== */
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px 15px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        /* ===== ВОПРОСЫ ТЕСТА ===== */
+        .question-card {
+            background: var(--light);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .question-number {
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .question-text {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 15px;
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option-label:hover {
+            border-color: var(--primary);
+        }
+
+        .option-label input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .option-label.selected {
+            border-color: var(--primary);
+            background: #eef2ff;
+        }
+
+        /* ===== ПРОГРЕСС БАР ===== */
+        .progress-container {
+            margin: 20px 0;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 4px;
+            transition: width 0.3s;
+            width: 0%;
+        }
+
+        .progress-text {
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--gray);
+            margin-top: 5px;
+        }
+
+        /* ===== ТАЙМЕР ===== */
+        .timer {
+            background: var(--warning);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .timer.warning {
+            background: var(--danger);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* ===== РЕЗУЛЬТАТЫ ===== */
+        .result-card {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .result-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .result-icon.passed {
+            color: var(--success);
+        }
+
+        .result-icon.failed {
+            color: var(--danger);
+        }
+
+        .result-score {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 10px 0;
+        }
+
+        .result-percentage {
+            font-size: 1.5rem;
+            color: var(--gray);
+            margin-bottom: 20px;
+        }
+
+        .result-status {
+            padding: 10px 25px;
+            border-radius: 25px;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 25px;
+        }
+
+        .result-status.passed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .result-status.failed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        /* ===== ТАБЛИЦА РЕЗУЛЬТАТОВ ===== */
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .results-table th,
+        .results-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .results-table th {
+            background: var(--light);
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .results-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .badge {
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        /* ===== УВЕДОМЛЕНИЯ ===== */
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-info {
+            background: #cce5ff;
+            color: #004085;
+            border: 1px solid #b8daff;
+        }
+
+        /* ===== ЗАГРУЗКА ===== */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--gray);
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ===== АДАПТИВНОСТЬ ===== */
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            nav {
+                justify-content: center;
+            }
+
+            .tests-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filters {
+                flex-direction: column;
+            }
+
+            main {
+                padding: 20px;
+            }
+        }
+
+        /* ===== СКРЫТЫЕ ЭЛЕМЕНТЫ ===== */
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- ===== ШАПКА ===== -->
+        <header>
+            <div class="logo">
+                <span class="logo-icon">📝</span>
+                <span>Система тестирования знаний</span>
+            </div>
+            
+            <div class="user-info">
+                <input type="text" id="studentName" class="user-input" 
+                       placeholder="Введите ваше имя *" maxlength="100">
+                <nav>
+                    <button class="nav-btn active" data-section="tests">📚 Тесты</button>
+                    <button class="nav-btn" data-section="results">📊 Результаты</button>
+                </nav>
+            </div>
+        </header>
+
+        <!-- ===== ОСНОВНОЙ КОНТЕНТ ===== -->
+        <main>
+            <!-- Секция: Список тестов -->
+            <section id="tests-section" class="section active">
+                <h2>Доступные тесты</h2>
+                
+                <div class="filters">
+                    <input type="text" id="subjectFilter" class="search-input" 
+                           placeholder="🔍 Поиск по предмету...">
+                    <button class="btn btn-outline" onclick="loadTests()">
+                        🔄 Обновить
+                    </button>
+                </div>
+
+                <div id="testsContainer" class="tests-grid">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Загрузка тестов...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Секция: Прохождение теста -->
+            <section id="quiz-section" class="section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+                    <h2 id="currentTestTitle">Название теста</h2>
+                    <div class="timer" id="timer">⏱️ <span id="timeRemaining">20:00</span></div>
+                </div>
+
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="progress-text">
+                        Вопрос <span id="currentQuestion">1</span> из <span id="totalQuestions">10</span>
+                    </div>
+                </div>
+
+                <div id="quizContainer">
+                    <!-- Вопросы будут добавлены динамически -->
+                </div>
+
+                <div style="display: flex; gap: 15px; margin-top: 30px; justify-content: space-between;">
+                    <button class="btn btn-outline" id="prevBtn" onclick="prevQuestion()" disabled>
+                        ← Назад
+                    </button>
+                    <button class="btn" id="nextBtn" onclick="nextQuestion()">
+                        Далее →
+                    </button>
+                    <button class="btn btn-success hidden" id="submitBtn" onclick="submitTest()">
+                        ✓ Завершить тест
+                    </button>
+                </div>
+            </section>
+
+            <!-- Секция: Результаты теста -->
+            <section id="result-section" class="section">
+                <h2>Результат тестирования</h2>
+                
+                <div class="result-card">
+                    <div class="result-icon" id="resultIcon">🎯</div>
+                    <h3 id="resultTestTitle">Название теста</h3>
+                    <div class="result-score" id="resultScore">8/10</div>
+                    <div class="result-percentage" id="resultPercentage">80%</div>
+                    <div class="result-status" id="resultStatus">Зачёт</div>
+                    
+                    <p id="resultMessage" style="color: var(--gray); margin-bottom: 25px;">
+                        Поздравляем! Вы успешно прошли тест.
+                    </p>
+                    
+                    <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                        <button class="btn" onclick="showSection('tests')">📚 Другие тесты</button>
+                        <button class="btn btn-outline" onclick="showSection('results')">📊 Моя статистика</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Секция: История результатов -->
+            <section id="results-section" class="section">
+                <h2>История результатов</h2>
+                
+                <div class="filters">
+                    <input type="text" id="resultsFilter" class="search-input" 
+                           placeholder="🔍 Поиск по имени..." 
+                           oninput="loadResults()">
+                </div>
+
+                <div id="resultsContainer">
+                    <table class="results-table">
+                        <thead>
+                            <tr>
+                                <th>Дата</th>
+                                <th>Тест</th>
+                                <th>Результат</th>
+                                <th>Процент</th>
+                                <th>Статус</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultsTableBody">
+                            <tr>
+                                <td colspan="5" style="text-align: center; color: var(--gray);">
+                                    <div class="loading" style="padding: 20px;">
+                                        <div class="spinner"></div>
+                                        <p>Загрузка результатов...</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- ===== JAVASCRIPT ===== -->
+    <script>
+        // ===== КОНФИГУРАЦИЯ =====
+        const API_BASE = 'http://127.0.0.1:8000/api';
+        
+        // ===== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ =====
+        let currentTest = null;
+        let questions = [];
+        let userAnswers = {};
+        let currentQuestionIndex = 0;
+        let timerInterval = null;
+        let timeRemaining = 0;
+
+        // ===== ИНИЦИАЛИЗАЦИЯ =====
+        document.addEventListener('DOMContentLoaded', () => {
+            // Загрузка тестов при старте
+            loadTests();
+            
+            // Навигация
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    showSection(e.target.dataset.section);
+                });
+            });
+
+            // Фильтр тестов
+            document.getElementById('subjectFilter').addEventListener('input', (e) => {
+                loadTests(e.target.value);
+            });
+
+            // Валидация имени при вводе
+            document.getElementById('studentName').addEventListener('input', validateStudentName);
+        });
+
+        // ===== НАВИГАЦИЯ =====
+        function showSection(sectionName) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            
+            if (sectionName === 'tests') {
+                document.getElementById('tests-section').classList.add('active');
+                loadTests();
+            } else if (sectionName === 'results') {
+                document.getElementById('results-section').classList.add('active');
+                loadResults();
+            } else if (sectionName === 'quiz') {
+                document.getElementById('quiz-section').classList.add('active');
+            } else if (sectionName === 'result') {
+                document.getElementById('result-section').classList.add('active');
+            }
+        }
+
+        // ===== ЗАГРУЗКА ТЕСТОВ =====
+        async function loadTests(subject = '') {
+            const container = document.getElementById('testsContainer');
+            container.innerHTML = '<div class="loading"><div class="spinner"></div><p>Загрузка тестов...</p></div>';
+
+            try {
+                const url = subject ? `${API_BASE}/tests?subject=${encodeURIComponent(subject)}` : `${API_BASE}/tests`;
+                const response = await fetch(url);
+                
+                if (!response.ok) throw new Error('Ошибка загрузки тестов');
+                
+                const tests = await response.json();
+                
+                if (tests.length === 0) {
+                    container.innerHTML = '<p style="text-align: center; color: var(--gray);">Тесты не найдены</p>';
+                    return;
+                }
+
+                container.innerHTML = tests.map(test => `
+                    <div class="test-card" onclick="startTest(${test.id})">
+                        <h3>${escapeHtml(test.title)}</h3>
+                        <span class="test-subject">${escapeHtml(test.subject)}</span>
+                        <div class="test-meta">
+                            <span>❓ ${test.question_count} вопросов</span>
+                            <span>⏱️ ${test.time_limit_minutes} мин</span>
+                            <span>✅ ${test.passing_score}% для зачёта</span>
+                        </div>
+                        <p style="color: var(--gray); margin: 10px 0; font-size: 0.95rem;">
+                            ${test.description || 'Описание теста...'}
+                        </p>
+                        <button class="btn" style="margin-top: 10px;">Начать тест →</button>
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Ошибка:', error);
+                container.innerHTML = `
+                    <div class="alert alert-error">
+                        ⚠️ Не удалось загрузить тесты. Убедитесь, что сервер запущен.
+                    </div>
+                    <button class="btn btn-outline" onclick="loadTests()">🔄 Повторить</button>
+                `;
+            }
+        }
+
+        // ===== НАЧАЛО ТЕСТА =====
+        async function startTest(testId) {
+            const studentName = document.getElementById('studentName').value.trim();
+            
+            if (!validateStudentName()) {
+                showAlert('Пожалуйста, введите ваше имя (минимум 2 символа)', 'error');
+                return;
+            }
+
+            // Сохраняем имя в localStorage для удобства
+            localStorage.setItem('studentName', studentName);
+
+            try {
+                // Загрузка информации о тесте
+                const testResponse = await fetch(`${API_BASE}/tests/${testId}`);
+                if (!testResponse.ok) throw new Error('Тест не найден');
+                currentTest = await testResponse.json();
+
+                // Загрузка вопросов
+                const questionsResponse = await fetch(`${API_BASE}/tests/${testId}/questions`);
+                if (!questionsResponse.ok) throw new Error('Ошибка загрузки вопросов');
+                questions = await questionsResponse.json();
+
+                if (questions.length === 0) {
+                    showAlert('В тесте нет вопросов', 'error');
+                    return;
+                }
+
+                // Инициализация теста
+                userAnswers = {};
+                currentQuestionIndex = 0;
+                
+                // Настройка таймера
+                timeRemaining = currentTest.time_limit_minutes * 60;
+                startTimer();
+
+                // Отображение интерфейса
+                document.getElementById('currentTestTitle').textContent = currentTest.title;
+                document.getElementById('totalQuestions').textContent = questions.length;
+                
+                renderQuestion();
+                showSection('quiz');
+                
+            } catch (error) {
+                console.error('Ошибка:', error);
+                showAlert('Не удалось начать тест. Попробуйте позже.', 'error');
+            }
+        }
+
+        // ===== ОТРИСОВКА ВОПРОСА =====
+        function renderQuestion() {
+            const question = questions[currentQuestionIndex];
+            const container = document.getElementById('quizContainer');
+            
+            // Обновление прогресса
+            document.getElementById('currentQuestion').textContent = currentQuestionIndex + 1;
+            document.getElementById('progressFill').style.width = 
+                `${((currentQuestionIndex + 1) / questions.length) * 100}%`;
+
+            // Кнопки навигации
+            document.getElementById('prevBtn').disabled = currentQuestionIndex === 0;
+            
+            if (currentQuestionIndex === questions.length - 1) {
+                document.getElementById('nextBtn').classList.add('hidden');
+                document.getElementById('submitBtn').classList.remove('hidden');
+            } else {
+                document.getElementById('nextBtn').classList.remove('hidden');
+                document.getElementById('submitBtn').classList.add('hidden');
+            }
+
+            // Рендер вопроса
+            let optionsHtml = '';
+            if (question.options && question.options.length > 0) {
+                optionsHtml = question.options.map(opt => `
+                    <label class="option-label ${userAnswers[question.id] === opt.id ? 'selected' : ''}" 
+                           onclick="selectOption(${question.id}, ${opt.id})">
+                        <input type="radio" name="question_${question.id}" 
+                               value="${opt.id}" 
+                               ${userAnswers[question.id] === opt.id ? 'checked' : ''}>
+                        <span>${escapeHtml(opt.text)}</span>
+                    </label>
+                `).join('');
+            }
+
+            container.innerHTML = `
+                <div class="question-card">
+                    <div class="question-number">Вопрос ${currentQuestionIndex + 1}</div>
+                    <div class="question-text">${escapeHtml(question.question_text)}</div>
+                    <div class="options-list">
+                        ${optionsHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        // ===== ВЫБОР ОТВЕТА =====
+        function selectOption(questionId, optionId) {
+            userAnswers[questionId] = optionId;
+            renderQuestion();
+        }
+
+        // ===== НАВИГАЦИЯ ПО ВОПРОСАМ =====
+        function nextQuestion() {
+            if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                renderQuestion();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                renderQuestion();
+            }
+        }
+
+        // ===== ТАЙМЕР =====
+        function startTimer() {
+            updateTimerDisplay();
+            
+            timerInterval = setInterval(() => {
+                timeRemaining--;
+                updateTimerDisplay();
+                
+                if (timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    submitTest();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeRemaining / 60);
+            const seconds = timeRemaining % 60;
+            const timerEl = document.getElementById('timeRemaining');
+            const timerBox = document.getElementById('timer');
+            
+            timerEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            // Предупреждение при менее 5 минутах
+            if (timeRemaining <= 300) {
+                timerBox.classList.add('warning');
+            } else {
+                timerBox.classList.remove('warning');
+            }
+        }
+
+        // ===== ОТПРАВКА ТЕСТА =====
+        async function submitTest() {
+            clearInterval(timerInterval);
+            
+            const studentName = document.getElementById('studentName').value.trim();
+            
+            // Формирование ответов
+            const answers = questions.map(q => ({
+                question_id: q.id,
+                selected_option_id: userAnswers[q.id] || null
+            }));
+
+            const payload = {
+                student_name: studentName,
+                test_id: currentTest.id,
+                answers: answers
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/submit`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Ошибка отправки ответов');
+                }
+
+                const result = await response.json();
+                displayResult(result);
+                
+            } catch (error) {
+                console.error('Ошибка:', error);
+                showAlert('Не удалось отправить ответы. Попробуйте снова.', 'error');
+            }
+        }
+
+        // ===== ОТОБРАЖЕНИЕ РЕЗУЛЬТАТА =====
+        function displayResult(result) {
+            document.getElementById('resultTestTitle').textContent = result.test_title;
+            document.getElementById('resultScore').textContent = `${result.score}/${result.max_score}`;
+            document.getElementById('resultPercentage').textContent = `${result.percentage}%`;
+            
+            const statusEl = document.getElementById('resultStatus');
+            const iconEl = document.getElementById('resultIcon');
+            const messageEl = document.getElementById('resultMessage');
+            
+            if (result.passed) {
+                statusEl.textContent = '✅ Зачёт';
+                statusEl.className = 'result-status passed';
+                iconEl.textContent = '🎉';
+                iconEl.className = 'result-icon passed';
+                messageEl.textContent = 'Поздравляем! Вы успешно прошли тест.';
+            } else {
+                statusEl.textContent = '❌ Незачёт';
+                statusEl.className = 'result-status failed';
+                iconEl.textContent = '📚';
+                iconEl.className = 'result-icon failed';
+                messageEl.textContent = 'Не расстраивайтесь! Попробуйте пройти тест ещё раз.';
+            }
+            
+            showSection('result');
+        }
+
+        // ===== ЗАГРУЗКА РЕЗУЛЬТАТОВ =====
+        async function loadResults(studentName = '') {
+            const tbody = document.getElementById('resultsTableBody');
+            const filterValue = studentName || document.getElementById('resultsFilter').value.trim() || 
+                               localStorage.getItem('studentName') || '';
+            
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;"><div class="loading" style="padding: 20px;"><div class="spinner"></div><p>Загрузка...</p></div></td></tr>';
+
+            try {
+                const url = filterValue ? 
+                    `${API_BASE}/results/${encodeURIComponent(filterValue)}` : 
+                    `${API_BASE}/results`;
+                    
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Ошибка загрузки');
+                
+                const results = await response.json();
+                
+                if (results.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--gray);">Нет результатов</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = results.map(r => `
+                    <tr>
+                        <td>${new Date(r.submitted_at).toLocaleDateString('ru-RU', {
+                            day: '2-digit', month: '2-digit', year: 'numeric',
+                            hour: '2-digit', minute: '2-digit'
+                        })}</td>
+                        <td><strong>${escapeHtml(r.test_title)}</strong></td>
+                        <td>${r.score}/${r.max_score}</td>
+                        <td><strong>${r.percentage}%</strong></td>
+                        <td><span class="badge ${r.passed ? 'badge-success' : 'badge-danger'}">
+                            ${r.passed ? 'Зачёт' : 'Незачёт'}
+                        </span></td>
+                    </tr>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Ошибка:', error);
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--danger);">Ошибка загрузки результатов</td></tr>';
+            }
+        }
+
+        // ===== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ =====
+        function validateStudentName() {
+            const name = document.getElementById('studentName').value.trim();
+            const isValid = name.length >= 2 && name.length <= 100;
+            document.getElementById('studentName').style.borderColor = isValid ? 'var(--border)' : 'var(--danger)';
+            return isValid;
+        }
+
+        function showAlert(message, type = 'info') {
+            // Простая реализация уведомлений
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.innerHTML = `⚠️ ${escapeHtml(message)}`;
+            alert.style.position = 'fixed';
+            alert.style.top = '20px';
+            alert.style.right = '20px';
+            alert.style.zIndex = '1000';
+            alert.style.maxWidth = '400px';
+            document.body.appendChild(alert);
+            
+            setTimeout(() => alert.remove(), 5000);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ===== ОБРАБОТКА ВЫХОДА СО СТРАНИЦЫ =====
+        window.addEventListener('beforeunload', (e) => {
+            if (document.getElementById('quiz-section').classList.contains('active') && timeRemaining > 0) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+    </script>
+</body>
+</html>
