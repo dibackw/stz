@@ -19,7 +19,7 @@ class TestCreate(TestBase):
 class TestResponse(TestBase):
     id: int
     question_count: int
-    
+
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -37,7 +37,7 @@ class QuestionBase(BaseModel):
 
 class QuestionResponse(QuestionBase):
     options: List[AnswerOptionBase]
-    
+
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -64,7 +64,7 @@ class TestResultResponse(BaseModel):
     percentage: float
     passed: bool
     submitted_at: datetime
-    
+
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -74,5 +74,5 @@ class ResultSummary(BaseModel):
     percentage: float
     passed: bool
     submitted_at: datetime
-    
+
     model_config = ConfigDict(from_attributes=True)

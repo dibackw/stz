@@ -20,8 +20,8 @@ app = FastAPI(
 
 @app.get("/api/tests", response_model=List[schemas.TestResponse])
 def get_tests(
-    subject: Optional[str] = Query(None, description="Фильтр по предмету"),
-    db: Session = Depends(database.get_db)
+        subject: Optional[str] = Query(None, description="Фильтр по предмету"),
+        db: Session = Depends(database.get_db)
 ):
     """Получить список доступных тестов"""
     query = db.query(models.Test)
@@ -45,11 +45,11 @@ def get_questions(test_id: int, db: Session = Depends(database.get_db)):
     test = db.query(models.Test).filter(models.Test.id == test_id).first()
     if not test:
         raise HTTPException(status_code=404, detail="Тест не найден")
-    
+
     questions = db.query(models.Question).filter(
         models.Question.test_id == test_id
     ).all()
-    
+
     result = []
     for q in questions:
         options = db.query(models.AnswerOption).filter(
@@ -68,47 +68,47 @@ def get_questions(test_id: int, db: Session = Depends(database.get_db)):
 
 @app.post("/api/submit", response_model=schemas.TestResultResponse)
 def submit_answers(
-    submission: schemas.AnswerSubmission,
-    db: Session = Depends(database.get_db)
+        submission: schemas.AnswerSubmission,
+        db: Session = Depends(database.get_db)
 ):
     """Принять ответы студента, проверить и сохранить результат"""
-    
+
     # Проверка существования теста
     test = db.query(models.Test).filter(models.Test.id == submission.test_id).first()
     if not test:
         raise HTTPException(status_code=404, detail="Тест не найден")
-    
+
     # Проверка количества вопросов
     questions = db.query(models.Question).filter(
         models.Question.test_id == submission.test_id
     ).all()
-    
+
     if len(questions) != len(submission.answers):
         raise HTTPException(
-            status_code=400, 
+            status_code=400,
             detail="Количество ответов не соответствует количеству вопросов"
         )
-    
+
     # Подсчёт правильных ответов
     score = 0
     for user_answer in submission.answers:
         question = db.query(models.Question).filter(
             models.Question.id == user_answer.question_id
         ).first()
-        
+
         if not question:
             continue
-            
+
         if question.question_type == "single_choice":
             # Проверка выбора одного варианта
             correct_option = db.query(models.AnswerOption).filter(
                 models.AnswerOption.question_id == user_answer.question_id,
                 models.AnswerOption.is_correct == True
             ).first()
-            
+
             if correct_option and user_answer.selected_option_id == correct_option.id:
                 score += 1
-                
+
         elif question.question_type == "multiple_choice":
             # Для множественного выбора нужна более сложная логика
             # (упрощённо: считаем правильным, если выбран хотя бы один верный)
@@ -118,11 +118,11 @@ def submit_answers(
             ).all()
             if user_answer.selected_option_id in [opt.id for opt in correct_options]:
                 score += 1
-    
+
     max_score = len(questions)
     percentage = round((score / max_score) * 100, 2) if max_score > 0 else 0
     passed = percentage >= test.passing_score
-    
+
     # Сохранение результата
     result = models.TestResult(
         student_name=submission.student_name,
@@ -135,7 +135,7 @@ def submit_answers(
     db.add(result)
     db.commit()
     db.refresh(result)
-    
+
     return {
         "id": result.id,
         "student_name": result.student_name,
@@ -152,17 +152,17 @@ def submit_answers(
 
 @app.get("/api/results", response_model=List[schemas.ResultSummary])
 def get_results(
-    student_name: Optional[str] = Query(None, description="Фильтр по имени студента"),
-    db: Session = Depends(database.get_db)
+        student_name: Optional[str] = Query(None, description="Фильтр по имени студента"),
+        db: Session = Depends(database.get_db)
 ):
     """Получить историю результатов тестирования"""
     query = db.query(models.TestResult).join(models.Test)
-    
+
     if student_name:
         query = query.filter(models.TestResult.student_name.ilike(f"%{student_name}%"))
-    
+
     query = query.order_by(models.TestResult.submitted_at.desc())
-    
+
     results = query.all()
     return [
         {
@@ -182,7 +182,7 @@ def get_student_results(student_name: str, db: Session = Depends(database.get_db
     results = db.query(models.TestResult).join(models.Test).filter(
         models.TestResult.student_name.ilike(f"%{student_name}%")
     ).order_by(models.TestResult.submitted_at.desc()).all()
-    
+
     return [
         {
             "id": r.id,
@@ -218,4 +218,5 @@ def root():
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
